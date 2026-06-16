@@ -6,18 +6,10 @@
 <title>Container Tracker</title>
 <style>
   :root {
-    --bg: #F7F8FA;
-    --surface: #FFFFFF;
-    --border: #E2E5EB;
-    --border-strong: #C8CDD8;
-    --text: #111827;
-    --text-muted: #6B7280;
-    --text-light: #9CA3AF;
-    --accent: #1B4FD8;
-    --radius: 10px;
-    --radius-sm: 6px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.07);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+    --bg: #F7F8FA; --surface: #FFFFFF; --border: #E2E5EB; --border-strong: #C8CDD8;
+    --text: #111827; --text-muted: #6B7280; --text-light: #9CA3AF;
+    --accent: #1B4FD8; --radius: 10px; --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07); --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
     --font: 'Inter', system-ui, -apple-system, sans-serif;
     --mono: 'JetBrains Mono', 'Fira Code', monospace;
   }
@@ -25,13 +17,32 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 50; }
-  .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+  /* SETUP BANNER */
+  #setup-banner { background: #FFF7ED; border-bottom: 2px solid #F59E0B; padding: 14px 1.5rem; display: flex; align-items: flex-start; gap: 12px; }
+  #setup-banner.hidden { display: none; }
+  #setup-banner .sb-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  #setup-banner .sb-body { flex: 1; }
+  #setup-banner .sb-title { font-size: 14px; font-weight: 600; color: #92400E; margin-bottom: 4px; }
+  #setup-banner .sb-text { font-size: 13px; color: #78350F; line-height: 1.6; }
+  #setup-banner .sb-fields { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  #setup-banner input { padding: 7px 10px; border: 1px solid #F59E0B; border-radius: var(--radius-sm); font-size: 12px; font-family: var(--mono); width: 260px; background: #fff; outline: none; }
+  #setup-banner input:focus { border-color: #D97706; }
+  #setup-banner .sb-btn { padding: 7px 16px; background: #D97706; color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+  #setup-banner .sb-dismiss { background: none; border: none; color: #92400E; font-size: 22px; cursor: pointer; padding: 0 4px; flex-shrink: 0; }
+
+  /* DB STATUS */
+  #db-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #9CA3AF; flex-shrink: 0; }
+  .st-connected .dot { background: #22C55E; }
+  .st-error .dot { background: #EF4444; }
+  .st-local .dot { background: #F59E0B; }
+
+  nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 50; gap: 12px; }
+  .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; flex-shrink: 0; }
   .nav-brand svg { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
 
   main { max-width: 1500px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-
-  /* STATS — two rows */
   .stats-section { margin-bottom: 1.5rem; }
   .stats-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 10px; }
@@ -41,7 +52,7 @@
   .stat-card.oa-card .s-label { color: #4361B8; }
   .stat-card .s-val { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
   .stat-card .s-sub { font-size: 11px; color: var(--text-light); margin-top: 3px; }
-  .s-blue { color: #1B4FD8; } .s-green { color: #15803D; } .s-amber { color: #B45309; } .s-red { color: #B91C1C; } .s-gray { color: var(--text); } .s-purple { color: #6D28D9; }
+  .s-blue{color:#1B4FD8}.s-green{color:#15803D}.s-amber{color:#B45309}.s-red{color:#B91C1C}.s-gray{color:var(--text)}.s-purple{color:#6D28D9}
   .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 12px; }
 
   .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
@@ -70,12 +81,9 @@
   .td-actions { display: flex; gap: 6px; white-space: nowrap; }
   .td-amount { font-family: var(--mono); font-size: 12px; font-weight: 500; }
   .td-oa { background: #F5F8FF; }
-
-  /* OA pill in table */
   .oa-term { display: inline-block; padding: 2px 7px; background: #EEF2FF; color: #4361B8; border-radius: 999px; font-size: 11px; font-weight: 600; }
   .oa-overdue { color: #B91C1C; font-weight: 600; }
 
-  /* Notes row — always visible when notes exist */
   .notes-row { display: none; }
   .notes-row.has-notes { display: table-row; }
   .notes-row td { padding: 0; border-bottom: 1px solid var(--border); background: #FAFBFF; }
@@ -85,19 +93,17 @@
 
   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
   .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-  .b-transit { background: #EEF2FF; color: #3730A3; } .b-transit::before { background: #6366F1; }
-  .b-arrived { background: #F0FDF4; color: #15803D; } .b-arrived::before { background: #22C55E; }
-  .b-delayed { background: #FFFBEB; color: #B45309; } .b-delayed::before { background: #F59E0B; }
-  .b-customs { background: #FFF7ED; color: #C2410C; } .b-customs::before { background: #F97316; }
-  .b-paid { background: #F0FDF4; color: #15803D; }
-  .b-unpaid { background: #FEF2F2; color: #B91C1C; }
+  .b-transit{background:#EEF2FF;color:#3730A3}.b-transit::before{background:#6366F1}
+  .b-arrived{background:#F0FDF4;color:#15803D}.b-arrived::before{background:#22C55E}
+  .b-delayed{background:#FFFBEB;color:#B45309}.b-delayed::before{background:#F59E0B}
+  .b-customs{background:#FFF7ED;color:#C2410C}.b-customs::before{background:#F97316}
+  .b-paid{background:#F0FDF4;color:#15803D}.b-unpaid{background:#FEF2F2;color:#B91C1C}
 
   .empty-state { text-align: center; padding: 4rem 1rem; }
   .empty-state svg { margin: 0 auto 1rem; opacity: 0.25; display: block; }
   .empty-state .e-title { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
   .empty-state p { color: var(--text-muted); font-size: 14px; }
 
-  /* MODAL */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--surface); border-radius: var(--radius); width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; box-shadow: var(--shadow-md); }
@@ -115,7 +121,6 @@
   .field input, .field select, .field textarea { padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: var(--font); color: var(--text); background: var(--surface); outline: none; width: 100%; }
   .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(27,79,216,0.1); }
   .field textarea { resize: vertical; min-height: 90px; }
-  .field .hint { font-size: 11px; color: var(--text-light); }
   .oa-fields { grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; background: #F5F8FF; border: 1px solid #C7D7FD; border-radius: var(--radius-sm); padding: 1rem; }
   .oa-fields.hidden { display: none; }
   .oa-toggle-row { grid-column: 1/-1; display: flex; align-items: center; gap: 10px; }
@@ -126,15 +131,39 @@
   .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: #111827; color: #fff; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; }
   .toast.show { opacity: 1; transform: translateY(0); }
 
+  #loading { position: fixed; inset: 0; background: rgba(247,248,250,0.9); z-index: 500; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+  #loading.hidden { display: none; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { font-size: 14px; color: var(--text-muted); }
+
   @media (max-width: 600px) {
     .modal-body { grid-template-columns: 1fr; }
     .field.full, .oa-fields { grid-column: 1; }
     .oa-fields { grid-template-columns: 1fr 1fr; }
     .stats { grid-template-columns: repeat(2, 1fr); }
+    #setup-banner input { width: 100%; }
   }
 </style>
 </head>
 <body>
+
+<div id="loading"><div class="spinner"></div><p>Connecting to database…</p></div>
+
+<div id="setup-banner" class="hidden">
+  <span class="sb-icon">🔧</span>
+  <div class="sb-body">
+    <div class="sb-title">Firebase not configured — data is local to this browser only</div>
+    <div class="sb-text">Paste your Firebase config values below to enable cross-device sync. Get them from <strong>Firebase Console → Project Settings → Your apps → SDK setup &amp; configuration</strong>.</div>
+    <div class="sb-fields">
+      <input type="text" id="cfg_apiKey" placeholder="apiKey">
+      <input type="text" id="cfg_projectId" placeholder="projectId">
+      <input type="text" id="cfg_appId" placeholder="appId">
+      <button class="sb-btn" onclick="saveFirebaseConfig()">Connect Firebase</button>
+    </div>
+  </div>
+  <button class="sb-dismiss" onclick="document.getElementById('setup-banner').classList.add('hidden')">×</button>
+</div>
 
 <nav>
   <div class="nav-brand">
@@ -144,10 +173,13 @@
     </svg>
     Container Tracker
   </div>
-  <button class="btn btn-primary" onclick="openModal()">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Add container
-  </button>
+  <div class="nav-right">
+    <span id="db-status"><span class="dot"></span><span id="db-status-text">Connecting…</span></span>
+    <button class="btn btn-primary" onclick="openModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add container
+    </button>
+  </div>
 </nav>
 
 <main>
@@ -158,20 +190,15 @@
     <div class="stats-label" style="color:#4361B8">OA payments (credit)</div>
     <div class="stats" id="stats-oa"></div>
   </div>
-
   <div class="toolbar">
-    <input type="text" id="search" placeholder="🔍  Search by any field…" oninput="render()">
+    <input type="text" id="search" placeholder="Search by any field…" oninput="render()">
     <select id="filterStatus" onchange="render()">
       <option value="">All statuses</option>
-      <option>In Transit</option>
-      <option>Arrived</option>
-      <option>Delayed</option>
-      <option>Customs Hold</option>
+      <option>In Transit</option><option>Arrived</option><option>Delayed</option><option>Customs Hold</option>
     </select>
     <select id="filterBalance" onchange="render()">
       <option value="">Balance: all</option>
-      <option value="Yes">Factory paid</option>
-      <option value="No">Factory unpaid</option>
+      <option value="Yes">Factory paid</option><option value="No">Factory unpaid</option>
     </select>
     <select id="sortBy" onchange="render()">
       <option value="added">Newest first</option>
@@ -181,94 +208,46 @@
       <option value="supplier">Sort by supplier</option>
     </select>
   </div>
-
   <div class="table-card">
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>Supplier Code</th>
-            <th>Container No.</th>
-            <th>Origin</th>
-            <th>Destination</th>
-            <th>Shipping Line</th>
-            <th>ETD</th>
-            <th>ETA</th>
-            <th>Status</th>
-            <th>Balance $ (Factory)</th>
-            <th class="th-oa">OA Term</th>
-            <th class="th-oa">OA Amount</th>
-            <th class="th-oa">OA Due Date</th>
-            <th></th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Supplier Code</th><th>Container No.</th><th>Origin</th><th>Destination</th>
+          <th>Shipping Line</th><th>ETD</th><th>ETA</th><th>Status</th>
+          <th>Balance $ (Factory)</th>
+          <th class="th-oa">OA Term</th><th class="th-oa">OA Amount</th><th class="th-oa">OA Due Date</th>
+          <th></th>
+        </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
   </div>
 </main>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-header">
       <h3 id="modalTitle">Add container</h3>
-      <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
     <div class="modal-body">
       <div class="section-title">Shipment details</div>
-      <div class="field">
-        <label>Supplier Code *</label>
-        <input type="text" id="f_supplier" placeholder="e.g. SUP-001">
+      <div class="field"><label>Supplier Code *</label><input type="text" id="f_supplier" placeholder="e.g. SUP-001"></div>
+      <div class="field"><label>Container Number *</label><input type="text" id="f_container" placeholder="e.g. MSCU1234567"></div>
+      <div class="field"><label>Origin</label><input type="text" id="f_origin" placeholder="e.g. Shanghai, CN"></div>
+      <div class="field"><label>Destination</label><input type="text" id="f_dest" placeholder="e.g. Singapore, SG"></div>
+      <div class="field"><label>Shipping Line</label><input type="text" id="f_line" placeholder="e.g. Maersk, MSC"></div>
+      <div class="field"><label>Status</label>
+        <select id="f_status"><option>In Transit</option><option>Arrived</option><option>Delayed</option><option>Customs Hold</option></select>
       </div>
-      <div class="field">
-        <label>Container Number *</label>
-        <input type="text" id="f_container" placeholder="e.g. MSCU1234567">
-      </div>
-      <div class="field">
-        <label>Origin</label>
-        <input type="text" id="f_origin" placeholder="e.g. Shanghai, CN">
-      </div>
-      <div class="field">
-        <label>Destination</label>
-        <input type="text" id="f_dest" placeholder="e.g. Singapore, SG">
-      </div>
-      <div class="field">
-        <label>Shipping Line</label>
-        <input type="text" id="f_line" placeholder="e.g. Maersk, MSC, CMA CGM">
-      </div>
-      <div class="field">
-        <label>Status</label>
-        <select id="f_status">
-          <option>In Transit</option>
-          <option>Arrived</option>
-          <option>Delayed</option>
-          <option>Customs Hold</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>ETD (Departure date)</label>
-        <input type="date" id="f_etd">
-      </div>
-      <div class="field">
-        <label>ETA (Arrival date)</label>
-        <input type="date" id="f_eta">
-      </div>
-
+      <div class="field"><label>ETD (Departure date)</label><input type="date" id="f_etd"></div>
+      <div class="field"><label>ETA (Arrival date)</label><input type="date" id="f_eta"></div>
       <hr class="section-divider">
       <div class="section-title">Factory balance</div>
-      <div class="field">
-        <label>Balance $ (Factory)</label>
-        <input type="number" id="f_balance_amount" placeholder="e.g. 4500" step="0.01">
+      <div class="field"><label>Balance $ (Factory)</label><input type="number" id="f_balance_amount" placeholder="e.g. 4500" step="0.01"></div>
+      <div class="field"><label>Factory balance paid?</label>
+        <select id="f_balance_paid"><option value="No">No — unpaid</option><option value="Yes">Yes — paid</option></select>
       </div>
-      <div class="field">
-        <label>Factory balance paid?</label>
-        <select id="f_balance_paid">
-          <option value="No">No — unpaid</option>
-          <option value="Yes">Yes — paid</option>
-        </select>
-      </div>
-
       <hr class="section-divider">
       <div class="section-title oa-title">OA payment (credit term)</div>
       <div class="oa-toggle-row" style="grid-column:1/-1;display:flex;align-items:center;gap:10px;">
@@ -276,31 +255,14 @@
         <label for="f_has_oa" style="font-size:13px;font-weight:500;cursor:pointer;">This supplier has OA payment terms</label>
       </div>
       <div class="oa-fields hidden" id="oa_fields">
-        <div class="field">
-          <label>OA Term</label>
-          <select id="f_oa_term">
-            <option value="30">30 days</option>
-            <option value="60">60 days</option>
-            <option value="90">90 days</option>
-            <option value="120">120 days</option>
-            <option value="custom">Custom</option>
-          </select>
+        <div class="field"><label>OA Term</label>
+          <select id="f_oa_term"><option value="30">30 days</option><option value="60">60 days</option><option value="90">90 days</option><option value="120">120 days</option><option value="custom">Custom</option></select>
         </div>
-        <div class="field">
-          <label>OA Amount $</label>
-          <input type="number" id="f_oa_amount" placeholder="e.g. 25000" step="0.01">
-        </div>
-        <div class="field">
-          <label>OA Due Date</label>
-          <input type="date" id="f_oa_due">
-        </div>
+        <div class="field"><label>OA Amount $</label><input type="number" id="f_oa_amount" placeholder="e.g. 25000" step="0.01"></div>
+        <div class="field"><label>OA Due Date</label><input type="date" id="f_oa_due"></div>
       </div>
-
       <hr class="section-divider">
-      <div class="field full">
-        <label>Notes</label>
-        <textarea id="f_notes" placeholder="Booking ref, agent contact, remarks…"></textarea>
-      </div>
+      <div class="field full"><label>Notes</label><textarea id="f_notes" placeholder="Booking ref, agent contact, remarks…"></textarea></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
@@ -311,83 +273,246 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
-const STORAGE_KEY = 'ct_v3';
-let containers = [];
-let editIdx = null;
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-function loadData() {
-  try { const r = localStorage.getItem(STORAGE_KEY); if (r) containers = JSON.parse(r); } catch(e) { containers = []; }
-}
-function saveData() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(containers)); } catch(e) {}
-}
+// ═══════════════════════════════════════════════════════════════════════
+//  FIREBASE CONFIG — paste your values here (or use the banner below)
+// ═══════════════════════════════════════════════════════════════════════
+const HARDCODED_CONFIG = {
+  apiKey:        "PASTE_API_KEY_HERE",
+  authDomain:    "PASTE_PROJECT_ID_HERE.firebaseapp.com",
+  projectId:     "PASTE_PROJECT_ID_HERE",
+  storageBucket: "PASTE_PROJECT_ID_HERE.appspot.com",
+  appId:         "PASTE_APP_ID_HERE"
+};
+// ═══════════════════════════════════════════════════════════════════════
+
+const LOCAL_KEY = 'ct_v3';
+const CFG_KEY   = 'ct_firebase_cfg';
+let db = null, unsub = null;
+let containers = [];
+let editId = null;
+
+// ─── UI helpers ─────────────────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-function toggleOA() {
-  const checked = document.getElementById('f_has_oa').checked;
-  document.getElementById('oa_fields').classList.toggle('hidden', !checked);
+function setStatus(cls, txt) {
+  const el = document.getElementById('db-status');
+  el.className = cls;
+  el.id = 'db-status';
+  document.getElementById('db-status-text').textContent = txt;
+}
+function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
+
+window.toggleOA = () => {
+  document.getElementById('oa_fields').classList.toggle('hidden', !document.getElementById('f_has_oa').checked);
+};
+
+// ─── Config resolution ───────────────────────────────────────────────────────
+function getConfig() {
+  try {
+    const saved = localStorage.getItem(CFG_KEY);
+    if (saved) { const c = JSON.parse(saved); if (c.apiKey && !c.apiKey.startsWith('PASTE')) return c; }
+  } catch(e){}
+  if (!HARDCODED_CONFIG.apiKey.startsWith('PASTE')) return HARDCODED_CONFIG;
+  return null;
 }
 
+// ─── Firebase init ───────────────────────────────────────────────────────────
+async function initFirebase(cfg) {
+  try {
+    const app = initializeApp(cfg);
+    db = getFirestore(app);
+    startLiveSync();
+  } catch(e) {
+    console.error('Firebase init failed', e);
+    fallbackLocal();
+  }
+}
+
+function startLiveSync() {
+  if (unsub) unsub();
+  unsub = onSnapshot(collection(db, 'containers'),
+    snap => {
+      containers = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      containers.sort((a,b) => (b.addedAt||'') > (a.addedAt||'') ? 1 : -1);
+      hideLoading();
+      setStatus('st-connected', 'Live sync ✓');
+      render();
+    },
+    err => {
+      console.error('Firestore error', err);
+      setStatus('st-error', 'Sync error');
+      hideLoading();
+    }
+  );
+}
+
+function fallbackLocal() {
+  hideLoading();
+  setStatus('st-local', 'Local only');
+  document.getElementById('setup-banner').classList.remove('hidden');
+  try {
+    const r = localStorage.getItem(LOCAL_KEY);
+    if (r) containers = JSON.parse(r).map((c,i) => ({ ...c, _id: 'local_' + i }));
+  } catch(e) {}
+  render();
+}
+
+// ─── Save Firebase config from banner ────────────────────────────────────────
+window.saveFirebaseConfig = function() {
+  const apiKey    = document.getElementById('cfg_apiKey').value.trim();
+  const projectId = document.getElementById('cfg_projectId').value.trim();
+  const appId     = document.getElementById('cfg_appId').value.trim();
+  if (!apiKey || !projectId || !appId) { alert('Please fill in all three fields.'); return; }
+  const cfg = { apiKey, authDomain: projectId+'.firebaseapp.com', projectId, storageBucket: projectId+'.appspot.com', appId };
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  document.getElementById('setup-banner').classList.add('hidden');
+  document.getElementById('loading').classList.remove('hidden');
+  initFirebase(cfg);
+};
+
+// ─── CRUD ────────────────────────────────────────────────────────────────────
+async function persistEntry(entry, id) {
+  if (db) {
+    const existing = id ? containers.find(c => c._id === id) : null;
+    const ref = id ? doc(db, 'containers', id) : doc(collection(db, 'containers'));
+    await setDoc(ref, { ...entry, addedAt: existing?.addedAt || new Date().toISOString() });
+  } else {
+    if (id) { const i = containers.findIndex(c => c._id === id); if (i > -1) containers[i] = { ...entry, _id: id }; }
+    else containers.push({ ...entry, _id: 'local_' + Date.now(), addedAt: new Date().toISOString() });
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(containers));
+    render();
+  }
+}
+async function removeEntry(id) {
+  if (db) {
+    await deleteDoc(doc(db, 'containers', id));
+  } else {
+    containers = containers.filter(c => c._id !== id);
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(containers));
+    render();
+  }
+}
+
+// ─── Modal ───────────────────────────────────────────────────────────────────
+window.openModal = function(id = null) {
+  editId = id;
+  const c = id ? containers.find(x => x._id === id) : null;
+  document.getElementById('modalTitle').textContent = c ? 'Edit container' : 'Add container';
+  document.getElementById('f_supplier').value       = c?.supplier || '';
+  document.getElementById('f_container').value      = c?.container || '';
+  document.getElementById('f_container').disabled   = !!c;
+  document.getElementById('f_origin').value         = c?.origin || '';
+  document.getElementById('f_dest').value           = c?.dest || '';
+  document.getElementById('f_line').value           = c?.line || '';
+  document.getElementById('f_status').value         = c?.status || 'In Transit';
+  document.getElementById('f_etd').value            = c?.etd || '';
+  document.getElementById('f_eta').value            = c?.eta || '';
+  document.getElementById('f_balance_amount').value = c?.balance_amount || '';
+  document.getElementById('f_balance_paid').value   = c?.balance_paid || 'No';
+  const hasOA = c?.has_oa || false;
+  document.getElementById('f_has_oa').checked = hasOA;
+  document.getElementById('oa_fields').classList.toggle('hidden', !hasOA);
+  document.getElementById('f_oa_term').value        = c?.oa_term || '90';
+  document.getElementById('f_oa_amount').value      = c?.oa_amount || '';
+  document.getElementById('f_oa_due').value         = c?.oa_due || '';
+  document.getElementById('f_notes').value          = c?.notes || '';
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('f_supplier').focus();
+};
+window.closeModal = function() {
+  document.getElementById('modalOverlay').classList.remove('open'); editId = null;
+};
+window.saveContainer = async function() {
+  const supplier  = document.getElementById('f_supplier').value.trim();
+  const container = document.getElementById('f_container').value.trim().toUpperCase();
+  if (!supplier)  { alert('Supplier code is required.'); return; }
+  if (!container) { alert('Container number is required.'); return; }
+  if (!editId && containers.find(c => c.container === container)) { alert(`Container "${container}" already exists.`); return; }
+  const has_oa = document.getElementById('f_has_oa').checked;
+  const entry = {
+    supplier, container,
+    origin:         document.getElementById('f_origin').value.trim(),
+    dest:           document.getElementById('f_dest').value.trim(),
+    line:           document.getElementById('f_line').value.trim(),
+    status:         document.getElementById('f_status').value,
+    etd:            document.getElementById('f_etd').value,
+    eta:            document.getElementById('f_eta').value,
+    balance_amount: document.getElementById('f_balance_amount').value,
+    balance_paid:   document.getElementById('f_balance_paid').value,
+    has_oa,
+    oa_term:   has_oa ? document.getElementById('f_oa_term').value   : '',
+    oa_amount: has_oa ? document.getElementById('f_oa_amount').value : '',
+    oa_due:    has_oa ? document.getElementById('f_oa_due').value    : '',
+    notes:     document.getElementById('f_notes').value.trim(),
+    updatedAt: new Date().toISOString()
+  };
+  closeModal();
+  await persistEntry(entry, editId);
+  showToast(editId ? 'Container updated ✓' : 'Container added ✓');
+};
+window.editContainer   = id => openModal(id);
+window.deleteContainer = async (id, name) => {
+  if (!confirm(`Delete container ${name}?`)) return;
+  await removeEntry(id); showToast('Deleted');
+};
+
+// ─── Render ──────────────────────────────────────────────────────────────────
 function statusBadge(s) {
-  const map = {'In Transit':'b-transit','Arrived':'b-arrived','Delayed':'b-delayed','Customs Hold':'b-customs'};
-  return `<span class="badge ${map[s]||'b-transit'}">${s}</span>`;
+  const m = {'In Transit':'b-transit','Arrived':'b-arrived','Delayed':'b-delayed','Customs Hold':'b-customs'};
+  return `<span class="badge ${m[s]||'b-transit'}">${s}</span>`;
 }
 function balanceBadge(b) {
-  return b==='Yes' ? `<span class="badge b-paid">✓ Paid</span>` : `<span class="badge b-unpaid">✗ Unpaid</span>`;
+  return b === 'Yes' ? `<span class="badge b-paid">✓ Paid</span>` : `<span class="badge b-unpaid">✗ Unpaid</span>`;
 }
 function fmt(d) {
   if (!d) return '—';
-  return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
 }
 function fmtMoney(v) {
-  if (!v && v!==0) return '—';
-  return '$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+  if (!v && v !== 0) return '—';
+  return '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
-function isOverdue(dateStr) {
-  if (!dateStr) return false;
-  return new Date(dateStr+'T00:00:00') < new Date();
-}
+function isOverdue(d) { return d ? new Date(d + 'T00:00:00') < new Date() : false; }
 
 function render() {
-  const q = (document.getElementById('search').value||'').toLowerCase();
-  const fs = document.getElementById('filterStatus').value;
-  const fb = document.getElementById('filterBalance').value;
+  const q    = (document.getElementById('search').value || '').toLowerCase();
+  const fs   = document.getElementById('filterStatus').value;
+  const fb   = document.getElementById('filterBalance').value;
   const sort = document.getElementById('sortBy').value;
 
-  let list = containers.map((c,i)=>({...c,_i:i})).filter(c=>{
+  let list = containers.filter(c => {
     const txt = [c.supplier,c.container,c.origin,c.dest,c.line,c.notes].join(' ').toLowerCase();
-    return (!q||txt.includes(q))&&(!fs||c.status===fs)&&(!fb||c.balance_paid===fb);
+    return (!q || txt.includes(q)) && (!fs || c.status === fs) && (!fb || c.balance_paid === fb);
   });
-
-  if (sort==='eta') list.sort((a,b)=>(a.eta||'9999')>(b.eta||'9999')?1:-1);
-  else if (sort==='etd') list.sort((a,b)=>(a.etd||'9999')>(b.etd||'9999')?1:-1);
-  else if (sort==='oa_due') list.sort((a,b)=>(a.oa_due||'9999')>(b.oa_due||'9999')?1:-1);
-  else if (sort==='supplier') list.sort((a,b)=>a.supplier.localeCompare(b.supplier));
-  else list.sort((a,b)=>b._i-a._i);
+  if (sort==='eta')      list.sort((a,b) => (a.eta||'9999') > (b.eta||'9999') ? 1 : -1);
+  else if (sort==='etd') list.sort((a,b) => (a.etd||'9999') > (b.etd||'9999') ? 1 : -1);
+  else if (sort==='oa_due')   list.sort((a,b) => (a.oa_due||'9999') > (b.oa_due||'9999') ? 1 : -1);
+  else if (sort==='supplier') list.sort((a,b) => a.supplier.localeCompare(b.supplier));
 
   const tbody = document.getElementById('tbody');
-  if (list.length===0) {
-    tbody.innerHTML=`<tr><td colspan="13"><div class="empty-state">
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-state">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
       <p class="e-title">${containers.length===0?'No containers yet':'No results'}</p>
       <p>${containers.length===0?'Add your first container using the button above.':'Try changing your search or filters.'}</p>
     </div></td></tr>`;
   } else {
-    tbody.innerHTML = list.map(c=>{
-      const id = c._i;
-      const hasNotes = c.notes && c.notes.trim().length>0;
-
-      const oaTerm = c.has_oa ? `<span class="oa-term">${c.oa_term}d</span>` : '—';
-      const oaAmount = c.has_oa ? `<span class="td-amount">${fmtMoney(c.oa_amount)}</span>` : '—';
-      const oaOverdue = c.has_oa && c.oa_due && isOverdue(c.oa_due);
-      const oaDue = c.has_oa && c.oa_due
-        ? `<span class="${oaOverdue?'oa-overdue':'td-muted'}">${fmt(c.oa_due)}${oaOverdue?' ⚠':''}` + `</span>`
-        : (c.has_oa ? '—' : '—');
-
+    tbody.innerHTML = list.map(c => {
+      const id       = c._id;
+      const sid      = JSON.stringify(id);
+      const hasNotes = c.notes && c.notes.trim().length > 0;
+      const oaTerm   = c.has_oa ? `<span class="oa-term">${c.oa_term}d</span>` : '—';
+      const oaAmt    = c.has_oa ? `<span class="td-amount">${fmtMoney(c.oa_amount)}</span>` : '—';
+      const oaOver   = c.has_oa && c.oa_due && isOverdue(c.oa_due);
+      const oaDue    = c.has_oa && c.oa_due ? `<span class="${oaOver?'oa-overdue':'td-muted'}">${fmt(c.oa_due)}${oaOver?' ⚠':''}</span>` : '—';
+      const safeNotes = (c.notes||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
       return `<tr class="main-row">
         <td class="td-mono">${c.supplier||'—'}</td>
         <td class="td-mono">${c.container||'—'}</td>
@@ -399,125 +524,50 @@ function render() {
         <td>${statusBadge(c.status)}</td>
         <td><div style="display:flex;align-items:center;gap:6px">${fmtMoney(c.balance_amount)} ${balanceBadge(c.balance_paid)}</div></td>
         <td class="td-oa">${oaTerm}</td>
-        <td class="td-oa">${oaAmount}</td>
+        <td class="td-oa">${oaAmt}</td>
         <td class="td-oa">${oaDue}</td>
         <td><div class="td-actions">
-          <button class="btn btn-outline btn-sm" onclick="editContainer(${id})">Edit</button>
-          <button class="btn-danger-sm" onclick="deleteContainer(${id})">Delete</button>
+          <button class="btn btn-outline btn-sm" onclick="editContainer(${sid})">Edit</button>
+          <button class="btn-danger-sm" onclick="deleteContainer(${sid},${JSON.stringify(c.container||'')})">Delete</button>
         </div></td>
       </tr>
-      <tr class="notes-row${hasNotes?' has-notes':''}" id="notes-row-${id}">
-        <td colspan="13">
-          <div class="notes-inner">
-            <span class="notes-label">Notes</span>
-            <span class="notes-text">${(c.notes||'').replace(/\n/g,'<br>')}</span>
-          </div>
-        </td>
+      <tr class="notes-row${hasNotes?' has-notes':''}">
+        <td colspan="13"><div class="notes-inner"><span class="notes-label">Notes</span><span class="notes-text">${safeNotes}</span></div></td>
       </tr>`;
     }).join('');
   }
 
-  // Stats — factory
-  const total = containers.length;
-  const inTransit = containers.filter(c=>c.status==='In Transit').length;
-  const arrived = containers.filter(c=>c.status==='Arrived').length;
-  const delayed = containers.filter(c=>c.status==='Delayed'||c.status==='Customs Hold').length;
-  const factoryUnpaid = containers.filter(c=>c.balance_paid==='No').length;
-  const factoryOwed = containers.filter(c=>c.balance_paid==='No'&&c.balance_amount).reduce((s,c)=>s+Number(c.balance_amount),0);
+  // Stats — factory (OA never included)
+  const factUnpaid = containers.filter(c => c.balance_paid==='No').length;
+  const factOwed   = containers.filter(c => c.balance_paid==='No' && c.balance_amount).reduce((s,c) => s+Number(c.balance_amount), 0);
+  document.getElementById('stats-factory').innerHTML = `
+    <div class="stat-card"><div class="s-label">Total containers</div><div class="s-val s-gray">${containers.length}</div></div>
+    <div class="stat-card"><div class="s-label">In Transit</div><div class="s-val s-blue">${containers.filter(c=>c.status==='In Transit').length}</div></div>
+    <div class="stat-card"><div class="s-label">Arrived</div><div class="s-val s-green">${containers.filter(c=>c.status==='Arrived').length}</div></div>
+    <div class="stat-card"><div class="s-label">Delayed / Hold</div><div class="s-val s-amber">${containers.filter(c=>c.status==='Delayed'||c.status==='Customs Hold').length}</div></div>
+    <div class="stat-card"><div class="s-label">Factory unpaid</div><div class="s-val s-red">${factUnpaid}</div></div>
+    <div class="stat-card"><div class="s-label">Total factory owed</div><div class="s-val s-red" style="font-size:18px;padding-top:4px">${factOwed>0?'$'+factOwed.toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</div></div>`;
 
-  document.getElementById('stats-factory').innerHTML=`
-    <div class="stat-card"><div class="s-label">Total containers</div><div class="s-val s-gray">${total}</div></div>
-    <div class="stat-card"><div class="s-label">In Transit</div><div class="s-val s-blue">${inTransit}</div></div>
-    <div class="stat-card"><div class="s-label">Arrived</div><div class="s-val s-green">${arrived}</div></div>
-    <div class="stat-card"><div class="s-label">Delayed / Hold</div><div class="s-val s-amber">${delayed}</div></div>
-    <div class="stat-card"><div class="s-label">Factory unpaid</div><div class="s-val s-red">${factoryUnpaid}</div></div>
-    <div class="stat-card"><div class="s-label">Total factory owed</div><div class="s-val s-red" style="font-size:18px;padding-top:4px">${factoryOwed>0?'$'+factoryOwed.toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</div></div>`;
-
-  // Stats — OA
-  const oaContainers = containers.filter(c=>c.has_oa);
-  const oaTotal = oaContainers.length;
-  const oaOwed = oaContainers.filter(c=>c.oa_amount).reduce((s,c)=>s+Number(c.oa_amount),0);
-  const oaOverdueCount = oaContainers.filter(c=>c.oa_due&&isOverdue(c.oa_due)).length;
-  const oaOverdueAmt = oaContainers.filter(c=>c.oa_due&&isOverdue(c.oa_due)&&c.oa_amount).reduce((s,c)=>s+Number(c.oa_amount),0);
-
-  // Next OA due
-  const upcoming = oaContainers.filter(c=>c.oa_due&&!isOverdue(c.oa_due)).sort((a,b)=>a.oa_due>b.oa_due?1:-1);
-  const nextDue = upcoming.length>0 ? fmt(upcoming[0].oa_due) : '—';
-
-  document.getElementById('stats-oa').innerHTML=`
-    <div class="stat-card oa-card"><div class="s-label">OA shipments</div><div class="s-val s-purple">${oaTotal}</div></div>
+  // Stats — OA (completely separate)
+  const oaC    = containers.filter(c => c.has_oa);
+  const oaOwed = oaC.filter(c => c.oa_amount).reduce((s,c) => s+Number(c.oa_amount), 0);
+  const oaOverC= oaC.filter(c => c.oa_due && isOverdue(c.oa_due));
+  const oaOverA= oaOverC.filter(c => c.oa_amount).reduce((s,c) => s+Number(c.oa_amount), 0);
+  const nextDue= oaC.filter(c => c.oa_due && !isOverdue(c.oa_due)).sort((a,b) => a.oa_due>b.oa_due?1:-1)[0];
+  document.getElementById('stats-oa').innerHTML = `
+    <div class="stat-card oa-card"><div class="s-label">OA shipments</div><div class="s-val s-purple">${oaC.length}</div></div>
     <div class="stat-card oa-card"><div class="s-label">Total OA outstanding</div><div class="s-val s-purple" style="font-size:18px;padding-top:4px">${oaOwed>0?'$'+oaOwed.toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</div></div>
-    <div class="stat-card oa-card"><div class="s-label">Overdue OA</div><div class="s-val s-red">${oaOverdueCount}</div>${oaOverdueAmt>0?`<div class="s-sub">$${oaOverdueAmt.toLocaleString('en-US',{maximumFractionDigits:0})} overdue</div>`:''}</div>
-    <div class="stat-card oa-card"><div class="s-label">Next OA due</div><div class="s-val s-purple" style="font-size:16px;padding-top:6px">${nextDue}</div></div>`;
+    <div class="stat-card oa-card"><div class="s-label">Overdue OA</div><div class="s-val s-red">${oaOverC.length}</div>${oaOverA>0?`<div class="s-sub">$${oaOverA.toLocaleString('en-US',{maximumFractionDigits:0})} overdue</div>`:''}</div>
+    <div class="stat-card oa-card"><div class="s-label">Next OA due</div><div class="s-val s-purple" style="font-size:16px;padding-top:6px">${nextDue?fmt(nextDue.oa_due):'—'}</div></div>`;
 }
+window.render = render;
 
-function openModal(idx=null) {
-  editIdx=idx;
-  const c=idx!==null?containers[idx]:null;
-  document.getElementById('modalTitle').textContent=c?'Edit container':'Add container';
-  document.getElementById('f_supplier').value=c?.supplier||'';
-  document.getElementById('f_container').value=c?.container||'';
-  document.getElementById('f_container').disabled=!!c;
-  document.getElementById('f_origin').value=c?.origin||'';
-  document.getElementById('f_dest').value=c?.dest||'';
-  document.getElementById('f_line').value=c?.line||'';
-  document.getElementById('f_status').value=c?.status||'In Transit';
-  document.getElementById('f_etd').value=c?.etd||'';
-  document.getElementById('f_eta').value=c?.eta||'';
-  document.getElementById('f_balance_amount').value=c?.balance_amount||'';
-  document.getElementById('f_balance_paid').value=c?.balance_paid||'No';
-  const hasOA=c?.has_oa||false;
-  document.getElementById('f_has_oa').checked=hasOA;
-  document.getElementById('oa_fields').classList.toggle('hidden',!hasOA);
-  document.getElementById('f_oa_term').value=c?.oa_term||'90';
-  document.getElementById('f_oa_amount').value=c?.oa_amount||'';
-  document.getElementById('f_oa_due').value=c?.oa_due||'';
-  document.getElementById('f_notes').value=c?.notes||'';
-  document.getElementById('modalOverlay').classList.add('open');
-  document.getElementById('f_supplier').focus();
-}
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); editIdx=null; }
-
-function saveContainer() {
-  const supplier=document.getElementById('f_supplier').value.trim();
-  const container=document.getElementById('f_container').value.trim().toUpperCase();
-  if (!supplier){alert('Supplier code is required.');return;}
-  if (!container){alert('Container number is required.');return;}
-  if (editIdx===null&&containers.find(c=>c.container===container)){alert(`Container "${container}" already exists.`);return;}
-  const has_oa=document.getElementById('f_has_oa').checked;
-  const entry={
-    supplier,container,
-    origin:document.getElementById('f_origin').value.trim(),
-    dest:document.getElementById('f_dest').value.trim(),
-    line:document.getElementById('f_line').value.trim(),
-    status:document.getElementById('f_status').value,
-    etd:document.getElementById('f_etd').value,
-    eta:document.getElementById('f_eta').value,
-    balance_amount:document.getElementById('f_balance_amount').value,
-    balance_paid:document.getElementById('f_balance_paid').value,
-    has_oa,
-    oa_term:has_oa?document.getElementById('f_oa_term').value:'',
-    oa_amount:has_oa?document.getElementById('f_oa_amount').value:'',
-    oa_due:has_oa?document.getElementById('f_oa_due').value:'',
-    notes:document.getElementById('f_notes').value.trim(),
-    updatedAt:new Date().toISOString()
-  };
-  if (editIdx!==null){containers[editIdx]=entry;showToast('Container updated ✓');}
-  else{containers.push(entry);showToast('Container added ✓');}
-  saveData();closeModal();render();
-}
-
-function editContainer(idx){openModal(idx);}
-function deleteContainer(idx){
-  if(!confirm(`Delete container ${containers[idx].container}?`))return;
-  containers.splice(idx,1);saveData();render();showToast('Deleted');
-}
-
-document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-
-loadData();render();
+// Boot
+const cfg = getConfig();
+if (cfg) initFirebase(cfg); else fallbackLocal();
 </script>
 </body>
 </html>
