@@ -137,6 +137,25 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   #loading p { font-size: 14px; color: var(--text-muted); }
 
+
+  /* LOGIN SCREEN */
+  body:not(.authed) nav,
+  body:not(.authed) main,
+  body:not(.authed) #setup-banner { display: none; }
+  #login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 450; display: none; align-items: center; justify-content: center; padding: 1rem; }
+  #login-screen.show { display: flex; }
+  .login-card { width: 100%; max-width: 390px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 1.5rem; }
+  .login-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; margin-bottom: 4px; }
+  .login-logo svg { color: var(--accent); }
+  .login-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
+  .login-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .login-field label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+  .login-field input { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: var(--font); outline: none; }
+  .login-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(27,79,216,0.1); }
+  .login-error { min-height: 18px; color: #B91C1C; font-size: 12px; margin: 2px 0 10px; }
+  .login-btn { width: 100%; justify-content: center; }
+  .user-pill { display:inline-flex; align-items:center; gap:6px; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:var(--text-muted); border:1px solid var(--border); border-radius:999px; padding:4px 10px; }
+
   @media (max-width: 600px) {
     .modal-body { grid-template-columns: 1fr; }
     .field.full, .oa-fields { grid-column: 1; }
@@ -149,6 +168,24 @@
 <body>
 
 <div id="loading"><div class="spinner"></div><p>Connecting to database…</p></div>
+
+<div id="login-screen">
+  <form class="login-card" onsubmit="loginUser(event)">
+    <div class="login-logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7-6H4a2 2 0 0 0-2 2v16z"/>
+        <path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>
+      </svg>
+      Container Tracker
+    </div>
+    <p class="login-sub">Login with the email and password created in Firebase Authentication.</p>
+    <div class="login-field"><label>Email</label><input type="email" id="login_email" autocomplete="username" required></div>
+    <div class="login-field"><label>Password</label><input type="password" id="login_password" autocomplete="current-password" required></div>
+    <div class="login-error" id="login_error"></div>
+    <button class="btn btn-primary login-btn" type="submit" id="login_btn">Login</button>
+  </form>
+</div>
+
 
 <div id="setup-banner" class="hidden">
   <span class="sb-icon">🔧</span>
@@ -175,6 +212,8 @@
   </div>
   <div class="nav-right">
     <span id="db-status"><span class="dot"></span><span id="db-status-text">Connecting…</span></span>
+    <span class="user-pill" id="user-email" title="Signed in user">—</span>
+    <button class="btn btn-outline" onclick="logoutUser()">Logout</button>
     <button class="btn btn-primary" onclick="openModal()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add container
@@ -276,22 +315,24 @@
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
-// ═══════════════════════════════════════════════════════════════════════
-//  FIREBASE CONFIG — paste your values here (or use the banner below)
-// ═══════════════════════════════════════════════════════════════════════
+// Firebase web app configuration. This is required for the browser app to connect.
+// Security is controlled by Firebase Authentication + Firestore Rules.
 const HARDCODED_CONFIG = {
-  apiKey:        "AIzaSyDffOAT2MmzrWhExY0dqdzAdehST3R0Jss",
-  authDomain:    "dyno-88f53.firebaseapp.com",
-  projectId:     "dyno-88f53",
-  storageBucket: "dyno-88f53.appspot.com",
-  appId:         "1:939648445353:web:dfc640f2cc5b127ab8f2b8"
+  apiKey: "AIzaSyDffOAT2MmzrWhExY0dqdzAdehST3R0Jss",
+  authDomain: "dyno-88f53.firebaseapp.com",
+  databaseURL: "https://dyno-88f53-default-rtdb.firebaseio.com",
+  projectId: "dyno-88f53",
+  storageBucket: "dyno-88f53.firebasestorage.app",
+  messagingSenderId: "939648445353",
+  appId: "1:939648445353:web:dfc640f2cc5b127ab8f2b8",
+  measurementId: "G-QP0ZHXVL3B"
 };
-// ═══════════════════════════════════════════════════════════════════════
 
 const LOCAL_KEY = 'ct_v3';
 const CFG_KEY   = 'ct_firebase_cfg';
-let db = null, unsub = null;
+let db = null, auth = null, unsub = null;
 let containers = [];
 let editId = null;
 
@@ -308,6 +349,8 @@ function setStatus(cls, txt) {
   document.getElementById('db-status-text').textContent = txt;
 }
 function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
+function showLogin(show) { document.getElementById('login-screen').classList.toggle('show', show); }
+function authMsg(e) { return e?.message ? e.message.replace('Firebase: ', '').replace(/\(auth\/.*?\)\.?/g,'').trim() : 'Login failed'; }
 
 window.toggleOA = () => {
   document.getElementById('oa_fields').classList.toggle('hidden', !document.getElementById('f_has_oa').checked);
@@ -328,7 +371,25 @@ async function initFirebase(cfg) {
   try {
     const app = initializeApp(cfg);
     db = getFirestore(app);
-    startLiveSync();
+    auth = getAuth(app);
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        document.body.classList.add('authed');
+        document.getElementById('user-email').textContent = user.email || 'Signed in';
+        showLogin(false);
+        document.getElementById('loading').classList.remove('hidden');
+        startLiveSync();
+      } else {
+        document.body.classList.remove('authed');
+        document.getElementById('user-email').textContent = '—';
+        if (unsub) { unsub(); unsub = null; }
+        containers = [];
+        hideLoading();
+        setStatus('st-local', 'Login required');
+        showLogin(true);
+      }
+    });
   } catch(e) {
     console.error('Firebase init failed', e);
     fallbackLocal();
@@ -375,6 +436,32 @@ window.saveFirebaseConfig = function() {
   document.getElementById('setup-banner').classList.add('hidden');
   document.getElementById('loading').classList.remove('hidden');
   initFirebase(cfg);
+};
+
+
+// ─── Authentication ─────────────────────────────────────────────────────────
+window.loginUser = async function(e) {
+  e.preventDefault();
+  const email = document.getElementById('login_email').value.trim();
+  const password = document.getElementById('login_password').value;
+  const btn = document.getElementById('login_btn');
+  const err = document.getElementById('login_error');
+  err.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Logging in…';
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (ex) {
+    err.textContent = authMsg(ex);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Login';
+  }
+};
+
+window.logoutUser = async function() {
+  if (!auth) return;
+  await signOut(auth);
 };
 
 // ─── CRUD ────────────────────────────────────────────────────────────────────
