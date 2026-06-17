@@ -614,8 +614,8 @@ function render() {
         <td class="td-oa">${oaAmt}</td>
         <td class="td-oa">${oaDue}</td>
         <td><div class="td-actions">
-          <button class="btn btn-outline btn-sm" onclick="editContainer(${sid})">Edit</button>
-          <button class="btn-danger-sm" onclick="deleteContainer(${sid},${JSON.stringify(c.container||'')})">Delete</button>
+          <button type="button" class="btn btn-outline btn-sm" data-action="edit" data-id="${String(id).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}">Edit</button>
+          <button type="button" class="btn-danger-sm" data-action="delete" data-id="${String(id).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}" data-name="${String(c.container||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}">Delete</button>
         </div></td>
       </tr>
       <tr class="notes-row${hasNotes?' has-notes':''}">
@@ -648,6 +648,20 @@ function render() {
     <div class="stat-card oa-card"><div class="s-label">Next OA due</div><div class="s-val s-purple" style="font-size:16px;padding-top:6px">${nextDue?fmt(nextDue.oa_due):'—'}</div></div>`;
 }
 window.render = render;
+
+
+// Robust table action handling for Edit/Delete buttons
+document.getElementById('tbody').addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  if (btn.dataset.action === 'edit') {
+    openModal(id);
+  } else if (btn.dataset.action === 'delete') {
+    const name = btn.dataset.name || '';
+    await deleteContainer(id, name);
+  }
+});
 
 document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
