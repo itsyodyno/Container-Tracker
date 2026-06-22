@@ -95,6 +95,7 @@
   .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
   .b-transit{background:#EEF2FF;color:#3730A3}.b-transit::before{background:#6366F1}
   .b-arrived{background:#F0FDF4;color:#15803D}.b-arrived::before{background:#22C55E}
+  .b-telex{background:#DCFCE7;color:#166534}.b-telex::before{background:#16A34A}
   .b-delayed{background:#FFFBEB;color:#B45309}.b-delayed::before{background:#F59E0B}
   .b-customs{background:#FFF7ED;color:#C2410C}.b-customs::before{background:#F97316}
   .b-paid{background:#F0FDF4;color:#15803D}.b-unpaid{background:#FEF2F2;color:#B91C1C}
@@ -233,7 +234,7 @@
     <input type="text" id="search" placeholder="Search by any field…" oninput="render()">
     <select id="filterStatus" onchange="render()">
       <option value="">All statuses</option>
-      <option>In Transit</option><option>Arrived</option><option>Delayed</option><option>Customs Hold</option>
+      <option>In Transit</option><option>Arrived</option><option>Telex Done</option><option>Delayed</option><option>Customs Hold</option>
     </select>
     <select id="filterBalance" onchange="render()">
       <option value="">Balance: all</option>
@@ -277,7 +278,7 @@
       <div class="field"><label>Destination</label><input type="text" id="f_dest" placeholder="e.g. Singapore, SG"></div>
       <div class="field"><label>Shipping Line</label><input type="text" id="f_line" placeholder="e.g. Maersk, MSC"></div>
       <div class="field"><label>Status</label>
-        <select id="f_status"><option>In Transit</option><option>Arrived</option><option>Delayed</option><option>Customs Hold</option></select>
+        <select id="f_status"><option>In Transit</option><option>Arrived</option><option>Telex Done</option><option>Delayed</option><option>Customs Hold</option></select>
       </div>
       <div class="field"><label>ETD (Departure date)</label><input type="date" id="f_etd"></div>
       <div class="field"><label>ETA (Arrival date)</label><input type="date" id="f_eta"></div>
@@ -554,7 +555,7 @@ window.deleteContainer = async (id, name) => {
 
 // ─── Render ──────────────────────────────────────────────────────────────────
 function statusBadge(s) {
-  const m = {'In Transit':'b-transit','Arrived':'b-arrived','Delayed':'b-delayed','Customs Hold':'b-customs'};
+  const m = {'In Transit':'b-transit','Arrived':'b-arrived','Telex Done':'b-telex','Delayed':'b-delayed','Customs Hold':'b-customs'};
   return `<span class="badge ${m[s]||'b-transit'}">${s}</span>`;
 }
 function balanceBadge(b) {
@@ -633,6 +634,7 @@ function render() {
     <div class="stat-card"><div class="s-label">Total containers</div><div class="s-val s-gray">${containers.length}</div></div>
     <div class="stat-card"><div class="s-label">In Transit</div><div class="s-val s-blue">${containers.filter(c=>c.status==='In Transit').length}</div></div>
     <div class="stat-card"><div class="s-label">Arrived</div><div class="s-val s-green">${containers.filter(c=>c.status==='Arrived').length}</div></div>
+    <div class="stat-card"><div class="s-label">Telex Done</div><div class="s-val s-green">${containers.filter(c=>c.status==='Telex Done').length}</div></div>
     <div class="stat-card"><div class="s-label">Delayed / Hold</div><div class="s-val s-amber">${containers.filter(c=>c.status==='Delayed'||c.status==='Customs Hold').length}</div></div>
     <div class="stat-card"><div class="s-label">Factory unpaid</div><div class="s-val s-red">${factUnpaid}</div></div>
     <div class="stat-card"><div class="s-label">Total factory owed</div><div class="s-val s-red" style="font-size:18px;padding-top:4px">${factOwed>0?'$'+factOwed.toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</div></div>`;
