@@ -240,8 +240,8 @@
       <option value="Yes">Factory paid</option><option value="No">Factory unpaid</option>
     </select>
     <select id="sortBy" onchange="render()">
+      <option value="eta" selected>ETA priority</option>
       <option value="added">Newest first</option>
-      <option value="eta">Sort by ETA</option>
       <option value="etd">Sort by ETD</option>
       <option value="oa_due">Sort by OA due date</option>
       <option value="supplier">Sort by supplier</option>
@@ -540,9 +540,11 @@ window.saveContainer = async function() {
     notes:     document.getElementById('f_notes').value.trim(),
     updatedAt: new Date().toISOString()
   };
+  const currentEditId = editId;
+  const isEdit = !!currentEditId;
+  await persistEntry(entry, currentEditId);
   closeModal();
-  await persistEntry(entry, editId);
-  showToast(editId ? 'Container updated ✓' : 'Container added ✓');
+  showToast(isEdit ? 'Container updated ✓' : 'Container added ✓');
 };
 window.editContainer   = id => openModal(id);
 window.deleteContainer = async (id, name) => {
