@@ -495,7 +495,7 @@ window.openModal = function(id = null) {
   document.getElementById('modalTitle').textContent = c ? 'Edit container' : 'Add container';
   document.getElementById('f_supplier').value       = c?.supplier || '';
   document.getElementById('f_container').value      = c?.container || '';
-  document.getElementById('f_container').disabled   = !!c;
+  document.getElementById('f_container').disabled   = false;
   document.getElementById('f_origin').value         = c?.origin || '';
   document.getElementById('f_dest').value           = c?.dest || '';
   document.getElementById('f_line').value           = c?.line || '';
@@ -522,7 +522,7 @@ window.saveContainer = async function() {
   const container = document.getElementById('f_container').value.trim().toUpperCase();
   if (!supplier)  { alert('Supplier code is required.'); return; }
   if (!container) { alert('Container number is required.'); return; }
-  if (!editId && containers.find(c => c.container === container)) { alert(`Container "${container}" already exists.`); return; }
+  if (containers.find(c => c.container === container && c._id !== editId)) { alert(`Container "${container}" already exists.`); return; }
   const has_oa = document.getElementById('f_has_oa').checked;
   const entry = {
     supplier, container,
@@ -628,28 +628,37 @@ function render() {
   }
 
   // Stats — factory (OA never included)
+  const inTransitC = containers.filter(c=>c.status==='In Transit').length;
+  const arrivedC   = containers.filter(c=>c.status==='Arrived').length;
+  const telexC     = containers.filter(c=>c.status==='Telex Done').length;
+  const delayHoldC = containers.filter(c=>c.status==='Delayed'||c.status==='Customs Hold').length;
   const factUnpaid = containers.filter(c => c.balance_paid==='No').length;
   const factOwed   = containers.filter(c => c.balance_paid==='No' && c.balance_amount).reduce((s,c) => s+Number(c.balance_amount), 0);
-  document.getElementById('stats-factory').innerHTML = `
-    <div class="stat-card"><div class="s-label">Total containers</div><div class="s-val s-gray">${containers.length}</div></div>
-    <div class="stat-card"><div class="s-label">In Transit</div><div class="s-val s-blue">${containers.filter(c=>c.status==='In Transit').length}</div></div>
-    <div class="stat-card"><div class="s-label">Arrived</div><div class="s-val s-green">${containers.filter(c=>c.status==='Arrived').length}</div></div>
-    <div class="stat-card"><div class="s-label">Telex Done</div><div class="s-val s-green">${containers.filter(c=>c.status==='Telex Done').length}</div></div>
-    <div class="stat-card"><div class="s-label">Delayed / Hold</div><div class="s-val s-amber">${containers.filter(c=>c.status==='Delayed'||c.status==='Customs Hold').length}</div></div>
-    <div class="stat-card"><div class="s-label">Factory unpaid</div><div class="s-val s-red">${factUnpaid}</div></div>
-    <div class="stat-card"><div class="s-label">Total factory owed</div><div class="s-val s-red" style="font-size:18px;padding-top:4px">${factOwed>0?'$'+factOwed.toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</div></div>`;
 
-  // Stats — OA (completely separate)
+  const factoryCards = [
+    `<div class="stat-card"><div class="s-label">Total containers</div><div class="s-val s-gray">${containers.length}</div></div>`
+  ];
+  if (inTransitC > 0) factoryCards.push(`<div class="stat-card"><div class="s-label">In Transit</div><div class="s-val s-blue">${inTransitC}</div></div>`);
+  if (arrivedC > 0)   factoryCards.push(`<div class="stat-card"><div class="s-label">Arrived</div><div class="s-val s-green">${arrivedC}</div></div>`);
+  if (telexC > 0)     factoryCards.push(`<div class="stat-card"><div class="s-label">Telex Done</div><div class="s-val s-green">${telexC}</div></div>`);
+  if (delayHoldC > 0) factoryCards.push(`<div class="stat-card"><div class="s-label">Delayed / Hold</div><div class="s-val s-amber">${delayHoldC}</div></div>`);
+  if (factUnpaid > 0) factoryCards.push(`<div class="stat-card"><div class="s-label">Factory unpaid</div><div class="s-val s-red">${factUnpaid}</div></div>`);
+  if (factOwed > 0)   factoryCards.push(`<div class="stat-card"><div class="s-label">Total factory owed</div><div class="s-val s-red" style="font-size:18px;padding-top:4px">$${factOwed.toLocaleString('en-US',{maximumFractionDigits:0})}</div></div>`);
+  document.getElementById('stats-factory').innerHTML = factoryCards.join('');
+
+  // Stats — OA (completely separate; zero-value cards are hidden)
   const oaC    = containers.filter(c => c.has_oa);
   const oaOwed = oaC.filter(c => c.oa_amount).reduce((s,c) => s+Number(c.oa_amount), 0);
   const oaOverC= oaC.filter(c => c.oa_due && isOverdue(c.oa_due));
   const oaOverA= oaOverC.filter(c => c.oa_amount).reduce((s,c) => s+Number(c.oa_amount), 0);
   const nextDue= oaC.filter(c => c.oa_due && !isOverdue(c.oa_due)).sort((a,b) => a.oa_due>b.oa_due?1:-1)[0];
-  document.getElementById('stats-oa').innerHTML = `
-    <div class="stat-card oa-card"><div class="s-label">OA shipments</div><div class="s-val s-purple">${oaC.length}</div></div>
-    <div class="stat-card oa-card"><div class="s-label">Total OA outstanding</div><div class="s-val s-purple" style="font-size:18px;padding-top:4px">${oaOwed>0?'$'+oaOwed.toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</div></div>
-    <div class="stat-card oa-card"><div class="s-label">Overdue OA</div><div class="s-val s-red">${oaOverC.length}</div>${oaOverA>0?`<div class="s-sub">$${oaOverA.toLocaleString('en-US',{maximumFractionDigits:0})} overdue</div>`:''}</div>
-    <div class="stat-card oa-card"><div class="s-label">Next OA due</div><div class="s-val s-purple" style="font-size:16px;padding-top:6px">${nextDue?fmt(nextDue.oa_due):'—'}</div></div>`;
+
+  const oaCards = [];
+  if (oaC.length > 0) oaCards.push(`<div class="stat-card oa-card"><div class="s-label">OA shipments</div><div class="s-val s-purple">${oaC.length}</div></div>`);
+  if (oaOwed > 0)    oaCards.push(`<div class="stat-card oa-card"><div class="s-label">Total OA outstanding</div><div class="s-val s-purple" style="font-size:18px;padding-top:4px">$${oaOwed.toLocaleString('en-US',{maximumFractionDigits:0})}</div></div>`);
+  if (oaOverC.length > 0) oaCards.push(`<div class="stat-card oa-card"><div class="s-label">Overdue OA</div><div class="s-val s-red">${oaOverC.length}</div>${oaOverA>0?`<div class="s-sub">$${oaOverA.toLocaleString('en-US',{maximumFractionDigits:0})} overdue</div>`:''}</div>`);
+  if (nextDue)       oaCards.push(`<div class="stat-card oa-card"><div class="s-label">Next OA due</div><div class="s-val s-purple" style="font-size:16px;padding-top:6px">${fmt(nextDue.oa_due)}</div></div>`);
+  document.getElementById('stats-oa').innerHTML = oaCards.join('');
 }
 window.render = render;
 
